@@ -1,5 +1,23 @@
 # rd-server
 
+## Running the server
+
+For first time compilation:
+
+```
+make compile-libs
+```
+
+This allows the creation of the sqlite3.o and mongoose.o object files, so that they need not have to be compiled each time, and the .o files can be used directly as is.
+
+For compile and run:
+
+```
+make
+```
+
+The definitions for these are given in the Makefile.
+
 ## Resources
 
 I wanted to go for as simple libraries as possible. So basically I have taken reasonably robust, single file libraries (i.e., to use them, you just have to include their respective .c and .h file).
