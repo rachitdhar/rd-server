@@ -1,18 +1,11 @@
 #include "mongoose.h"
 #include <stdio.h>
+#include "common.h"
 
 #include "api/books.h"
+#include "api/posts.h"
 
 #define URL "http://0.0.0.0:8000"
-#define MAX_JSON_RESPONSE_SIZE 100000
-#define MAX_JSON_DATA_SIZE 99500
-#define MAX_JSON_MSG_SIZE 500
-
-typedef struct {
-    int status_code;
-    char* data;
-    char* message;
-} HTTP_RESPONSE_DETAILS;
 
 static char response[MAX_JSON_RESPONSE_SIZE];
 
@@ -36,6 +29,26 @@ char* get_method_type(struct mg_str method)
 }
 
 
+void handle_controller_result(
+void* (*controller)(const char*, struct mg_str),
+const char* method,
+struct mg_str uri,
+HTTP_RESPONSE_DETAILS* hrd
+) {
+    void* result = (*controller)(method, uri);
+    if (!result) {
+	hrd->status_code = 500;
+	hrd->data = "";
+	hrd->message = "API endpoint failed";
+	hrd->type = JSON;
+    } else {
+	hrd->status_code = 200;
+	hrd->data = result;
+	hrd->message = "Message request successful";
+    }
+}
+
+
 HTTP_RESPONSE_DETAILS* get_api_endpoint_response(const char* method, struct mg_str uri)
 {
     HTTP_RESPONSE_DETAILS* hrd = malloc(sizeof(HTTP_RESPONSE_DETAILS));
@@ -44,21 +57,13 @@ HTTP_RESPONSE_DETAILS* get_api_endpoint_response(const char* method, struct mg_s
     hrd->message = malloc(MAX_JSON_MSG_SIZE);
     if (!hrd->message) return NULL;
 
-    if (mg_match(uri, mg_str("/api/books/"), NULL)) {
-	void* result = books_controller(method, uri);
-	if (!result) {
-	    hrd->status_code = 500;
-	    hrd->data = "";
-	    hrd->message = "Books endpoint failed";
-	} else {
-	    hrd->status_code = 200;
-	    hrd->data = (const char*)result;
-	    hrd->message = "Message request successful";
-	}
-    } else {
+    if (mg_match(uri, mg_str("/api/books/"), NULL)) handle_controller_result(&books_controller, method, uri, hrd);
+    else if (mg_match(uri, mg_str("/api/posts/"), NULL)) handle_controller_result(&posts_controller, method, uri, hrd);
+    else {
 	hrd->status_code = 404;
 	hrd->data = "";
 	hrd->message = "Failed due to invalid uri";
+	hrd->type = JSON;
     }
     return hrd;
 }
@@ -69,9 +74,9 @@ void send_default_failure_response(struct mg_connection *conn)
     mg_http_reply(
         conn,
         500,
-        "Content-Type: application/json\r\n",
+        JSON_CONTENT_TYPE,
         "%s",
-        "{ \"status\": 500, \"data\": \"\", \"message\": \"Internal server error\" }"
+        INTERNAL_SERVER_ERROR_JSON
     );
 }
 
@@ -97,7 +102,14 @@ static void event_handler(struct mg_connection *conn, int event, void* event_dat
 	return;
     }
 
-    mg_http_reply(conn, hrd->status_code, "Content-Type: application/json\r\n", "%s", response);
+    if (hrd->type == JSON) {
+	mg_http_reply(conn, hrd->status_code, JSON_CONTENT_TYPE, "%s", (char*)response);
+    } else if (hrd->type == STREAM) {
+	mg_http_reply(c, 200,
+                    STREAM_CONTENT_TYPE,
+                    hrd->data->filesize,
+                    hrd->data->buffer);
+    }
 
     free(hrd->data);
     free(hrd->message);

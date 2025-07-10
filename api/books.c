@@ -1,7 +1,5 @@
 #include "books.h"
 
-#define BASE "/api/books"
-
 // get list of all books
 char* get_books()
 {
