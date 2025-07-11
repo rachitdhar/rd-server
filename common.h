@@ -34,4 +34,8 @@ typedef struct {
     RESPONSE_TYPE type;
 } CONTROLLER_RESULT;
 
+
+// to get the stream contents from a file at a given path
+STREAM_DATA* get_file_stream(char* filepath);
+
 #endif

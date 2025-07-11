@@ -26,30 +26,7 @@ STREAM_DATA* get_post_stream(const char* post_id)
     char* filepath = malloc(sizeof(POSTS_PATH) + MAX_FILE_NAME_LENGTH);
     snprintf(filepath, MAX_FILE_NAME_LENGTH, "%spost_%s.md", POSTS_PATH, post_id);
 
-    FILE* fp = fopen(filepath, "rb");
-    free(filepath);
-    if (fp == NULL) return NULL;
-
-    fseek(fp, 0, SEEK_END);
-    long filesize = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    char* buffer = malloc(filesize);
-    if (!buffer) {
-	fclose(fp);
-	return NULL;
-    }
-
-    fread(buffer, 1, filesize, fp);
-    fclose(fp);
-
-    STREAM_DATA* sd = malloc(sizeof(STREAM_DATA));
-    if (!sd) {
-	free(buffer);
-	return NULL;
-    }
-    sd->filesize = filesize;
-    sd->buffer = buffer;
+    STREAM_DATA* sd = get_file_stream(filepath);
     return sd;
 }
 
