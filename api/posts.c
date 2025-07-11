@@ -1,5 +1,7 @@
 #include "posts.h"
 
+#define BASE "/api/posts"
+
 // get list of all posts
 char* get_posts()
 {
@@ -22,8 +24,10 @@ char* get_posts()
 STREAM_DATA* get_post_stream(const char* post_id)
 {
     char* filepath = malloc(sizeof(POSTS_PATH) + MAX_FILE_NAME_LENGTH);
-    snprintf(filepath, sizeof(filepath), POSTS_PATH, "post_", post_id);
+    snprintf(filepath, MAX_FILE_NAME_LENGTH, "%spost_%s.md", POSTS_PATH, post_id);
+
     FILE* fp = fopen(filepath, "rb");
+    free(filepath);
     if (fp == NULL) return NULL;
 
     fseek(fp, 0, SEEK_END);
@@ -31,23 +35,41 @@ STREAM_DATA* get_post_stream(const char* post_id)
     fseek(fp, 0, SEEK_SET);
 
     char* buffer = malloc(filesize);
+    if (!buffer) {
+	fclose(fp);
+	return NULL;
+    }
+
     fread(buffer, 1, filesize, fp);
     fclose(fp);
 
     STREAM_DATA* sd = malloc(sizeof(STREAM_DATA));
+    if (!sd) {
+	free(buffer);
+	return NULL;
+    }
     sd->filesize = filesize;
     sd->buffer = buffer;
     return sd;
 }
 
 
-void* posts_controller(const char* method, struct mg_str uri)
+CONTROLLER_RESULT* posts_controller(const char* method, struct mg_http_message* msg)
 {
-    if (strcmp(method, "GET") == 0 && mg_match(uri, mg_str(BASE"/"), NULL)) return get_posts();
-    if (strcmp(method, "GET") == 0 && mg_match(uri, mg_str(BASE"/#"), NULL)) {
+    CONTROLLER_RESULT* res = malloc(sizeof(CONTROLLER_RESULT));
+    if (strcmp(method, "GET") == 0 && mg_match(msg->uri, mg_str(BASE), NULL)) {
+	// handling for query params
 	char* id = malloc(MAX_FILE_NAME_LENGTH - sizeof("post_"));
-	mg_http_get_uri_component(uri, 2, id, sizeof(id));
-	return get_post_stream(id);
+	if (mg_http_get_var(&msg->query, "id", id, sizeof(id)) > 0) {
+	    res->data = get_post_stream(id);
+	    res->type = STREAM;
+	    return res;
+	}
+
+	res->data = get_posts();
+	res->type = JSON;
+	return res;
     }
+    free(res);
     return NULL;
 }

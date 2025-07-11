@@ -1,10 +1,12 @@
+#ifndef POSTS_H
+#define POSTS_H
+
 #include "../sql_handler.h"
 #include "../mongoose.h"
 #include "../common.h"
 
-#define BASE "/api/posts"
-#define POSTS_PATH "../store/posts/"
-#define MAX_FILE_NAME_LENGTH 100
-
 char* get_posts();
-void* posts_controller(const char* method, struct mg_str uri);
+STREAM_DATA* get_post_stream(const char* post_id);
+CONTROLLER_RESULT* posts_controller(const char* method, struct mg_http_message* msg);
+
+#endif

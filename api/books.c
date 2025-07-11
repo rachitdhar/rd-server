@@ -1,5 +1,7 @@
 #include "books.h"
 
+#define BASE "/api/books"
+
 // get list of all books
 char* get_books()
 {
@@ -19,8 +21,14 @@ char* get_books()
 }
 
 
-void* books_controller(const char* method, struct mg_str uri)
+CONTROLLER_RESULT* books_controller(const char* method, struct mg_http_message* msg)
 {
-    if (strcmp(method, "GET") == 0 && mg_match(uri, mg_str(BASE"/"), NULL)) return get_books();
+    CONTROLLER_RESULT* res = malloc(sizeof(CONTROLLER_RESULT));
+    if (strcmp(method, "GET") == 0 && mg_match(msg->uri, mg_str(BASE), NULL)) {
+	res->data = get_books();
+	res->type = JSON;
+	return res;
+    }
+    free(res);
     return NULL;
 }

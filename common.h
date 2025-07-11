@@ -1,10 +1,16 @@
+#ifndef COMMON_H
+#define COMMON_H
+
 #define MAX_JSON_RESPONSE_SIZE 100000
 #define MAX_JSON_DATA_SIZE 99500
 #define MAX_JSON_MSG_SIZE 500
+#define MAX_FILE_NAME_LENGTH 100
 
 #define JSON_CONTENT_TYPE "Content-Type: application/json\r\n"
-#define STREAM_CONTENT_TYPE "Content-Type: text/plain\r\nContent-Length: %ld\r\n\r\n"
 #define INTERNAL_SERVER_ERROR_JSON "{ \"status\": 500, \"data\": \"\", \"message\": \"Internal server error\" }"
+
+// NOTE: fopen() does not care about relative path, it just starts from the project root
+#define POSTS_PATH "store/posts/"
 
 typedef struct {
     char* buffer;
@@ -14,11 +20,18 @@ typedef struct {
 typedef enum {
     JSON,
     STREAM
-} RESPONSE_TYPES;
+} RESPONSE_TYPE;
 
 typedef struct {
     int status_code;
     void* data;
     char* message;
-    RESPONSE_TYPES type;
+    RESPONSE_TYPE type;
 } HTTP_RESPONSE_DETAILS;
+
+typedef struct {
+    void* data;
+    RESPONSE_TYPE type;
+} CONTROLLER_RESULT;
+
+#endif

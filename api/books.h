@@ -1,7 +1,11 @@
+#ifndef BOOKS_H
+#define BOOKS_H
+
 #include "../sql_handler.h"
 #include "../mongoose.h"
-
-#define BASE "/api/books"
+#include "../common.h"
 
 char* get_books();
-void* books_controller(const char* method, struct mg_str uri);
+CONTROLLER_RESULT* books_controller(const char* method, struct mg_http_message* msg);
+
+#endif

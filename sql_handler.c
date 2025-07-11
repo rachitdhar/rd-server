@@ -32,7 +32,7 @@ void sql_select_as_json(sqlite3* db, const char* query, char* buffer, size_t buf
 	offset += snprintf(buffer + offset, buffer_size - offset, "\t}");
         row_count++;
     }
-    offset += snprintf(buffer + offset, buffer_size - offset, "\n]\n");
+    offset += snprintf(buffer + offset, buffer_size - offset, "\n\t]");
 
     sqlite3_finalize(s);
 }
