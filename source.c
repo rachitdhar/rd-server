@@ -14,7 +14,7 @@ int construct_json_response(HTTP_RESPONSE_DETAILS* hrd)
 {
     return snprintf(
         response, sizeof(response),
-        "{ \"status\": %d, \"data\": \"%s\", \"message\": \"%s\" }",
+        "{ \"status\": %d, \"data\": %s, \"message\": \"%s\" }",
         hrd->status_code, hrd->data, hrd->message
     );
 }
@@ -26,6 +26,7 @@ char* get_method_type(struct mg_str method)
     if (mg_strcmp(method, mg_str("POST")) == 0) return "POST";
     if (mg_strcmp(method, mg_str("PUT")) == 0) return "PUT";
     if (mg_strcmp(method, mg_str("DELETE")) == 0) return "DELETE";
+    if (mg_strcmp(method, mg_str("OPTIONS")) == 0) return "OPTIONS";
     return NULL;
 }
 
@@ -90,6 +91,16 @@ static void event_handler(struct mg_connection *conn, int event, void* event_dat
     struct mg_http_message *msg = (struct mg_http_message*) event_data;
     const char* method = get_method_type(msg->method);
 
+    // to handle CORS
+    if (strcmp(method, "OPTIONS") == 0) {
+	mg_http_reply(conn, 200,
+	"Access-Control-Allow-Origin: *\r\n"
+	"Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n"
+	"Access-Control-Allow-Headers: Content-Type\r\n",
+	"");
+	return;
+    }
+
     HTTP_RESPONSE_DETAILS* hrd = get_api_endpoint_response(method, msg);
     if (!hrd) {
 	send_default_failure_response(conn);
@@ -107,14 +118,13 @@ static void event_handler(struct mg_connection *conn, int event, void* event_dat
 	    return;
 	}
 
-	mg_http_reply(conn, hrd->status_code, JSON_CONTENT_TYPE, "%s", (char*)response);
+	mg_http_reply(conn, hrd->status_code, CORS_HEADERS JSON_CONTENT_TYPE, "%s", (char*)response);
     } else if (hrd->type == STREAM) {
 	STREAM_DATA* sd = (STREAM_DATA*)hrd->data;
 
 	mg_printf(conn,
-        "HTTP/1.1 %d OK\r\n"
-        "Content-Type: text/plain\r\n"
-        "Content-Length: %ld\r\n\r\n",
+	CORS_HEADERS
+        "HTTP/1.1 %d OK\r\nContent-Type: text/plain\r\nContent-Length: %ld\r\n\r\n",
         hrd->status_code, sd->filesize); // sending header
 
 	mg_send(conn, sd->buffer, sd->filesize); // sending file stream

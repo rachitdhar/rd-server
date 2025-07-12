@@ -13,7 +13,13 @@ char* get_books()
 
     char* response = malloc(MAX_RESPONSE_SIZE);
 
-    const char *query = "select * from books;";
+    const char *query =
+    "select"
+    " b.id, b.name, b.author_name, bs.code as status_code, bs.name as status, bc.code as classification_code, bc.name as classification"
+    " from books b"
+    " inner join book_status bs on bs.id = b.status_id"
+    " inner join book_classification bc on bc.id = b.classification_id;";
+
     sql_select_as_json(db, query, response, MAX_RESPONSE_SIZE);
 
     sqlite3_close(db);
