@@ -52,6 +52,14 @@ HTTP_RESPONSE_DETAILS* hrd
 }
 
 
+bool uri_has_prefix(struct mg_str *uri, const char *prefix) {
+    size_t len = strlen(prefix);
+    return uri->len >= len &&
+           strncmp(uri->buf, prefix, len) == 0 &&
+           (uri->len == len || uri->buf[len] == '/' || uri->buf[len] == '\0');
+}
+
+
 HTTP_RESPONSE_DETAILS* get_api_endpoint_response(const char* method, struct mg_http_message* msg)
 {
     HTTP_RESPONSE_DETAILS* hrd = malloc(sizeof(HTTP_RESPONSE_DETAILS));
@@ -60,8 +68,8 @@ HTTP_RESPONSE_DETAILS* get_api_endpoint_response(const char* method, struct mg_h
     hrd->message = malloc(MAX_JSON_MSG_SIZE);
     if (!hrd->message) return NULL;
 
-    if (mg_match(msg->uri, mg_str("/api/books"), NULL)) handle_controller_result(&books_controller, method, msg, hrd);
-    else if (mg_match(msg->uri, mg_str("/api/posts"), NULL)) handle_controller_result(&posts_controller, method, msg, hrd);
+    if (uri_has_prefix(&msg->uri, "/api/books")) handle_controller_result(&books_controller, method, msg, hrd);
+    else if (uri_has_prefix(&msg->uri, "/api/posts")) handle_controller_result(&posts_controller, method, msg, hrd);
     else {
 	hrd->status_code = 404;
 	hrd->data = "";
@@ -123,8 +131,9 @@ static void event_handler(struct mg_connection *conn, int event, void* event_dat
 	STREAM_DATA* sd = (STREAM_DATA*)hrd->data;
 
 	mg_printf(conn,
+        "HTTP/1.1 %d OK\r\n"
 	CORS_HEADERS
-        "HTTP/1.1 %d OK\r\nContent-Type: text/plain\r\nContent-Length: %ld\r\n\r\n",
+	"Content-Type: text/plain\r\nContent-Length: %ld\r\n\r\n",
         hrd->status_code, sd->filesize); // sending header
 
 	mg_send(conn, sd->buffer, sd->filesize); // sending file stream
