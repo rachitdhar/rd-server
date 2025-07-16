@@ -9,12 +9,20 @@ all:
 	@echo -e "\n"
 	rm -f $(NAME)
 
+linux:
+	$(CC) $(CFLAGS) $(SRCS) -o $(NAME) && ./$(NAME)
+	@echo -e "\n"
+	rm -f $(NAME)
+
 compile-libs:
 	$(CC) -c -D_POSIX_C_SOURCE=200000L mongoose.c -o mongoose.o
 	$(CC) -c sqlite3.c -o sqlite3.o
 
 build:
 	$(CC) $(CFLAGS) $(SRCS) -o $(NAME) $(LDFLAGS)
+
+build-linux:
+	$(CC) $(CFLAGS) $(SRCS) -o $(NAME)
 
 run:
 	./$(NAME)

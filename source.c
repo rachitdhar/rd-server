@@ -5,7 +5,7 @@
 #include "api/books.h"
 #include "api/posts.h"
 
-#define URL "http://0.0.0.0:8000"
+#define URL "http://0.0.0.0:5000"
 
 static char response[MAX_JSON_RESPONSE_SIZE];
 
@@ -15,7 +15,7 @@ int construct_json_response(HTTP_RESPONSE_DETAILS* hrd)
     return snprintf(
         response, sizeof(response),
         "{ \"status\": %d, \"data\": %s, \"message\": \"%s\" }",
-        hrd->status_code, hrd->data, hrd->message
+        hrd->status_code, (char*)(hrd->data), hrd->message
     );
 }
 
@@ -65,9 +65,6 @@ HTTP_RESPONSE_DETAILS* get_api_endpoint_response(const char* method, struct mg_h
     HTTP_RESPONSE_DETAILS* hrd = malloc(sizeof(HTTP_RESPONSE_DETAILS));
     if (!hrd) return NULL;
 
-    hrd->message = malloc(MAX_JSON_MSG_SIZE);
-    if (!hrd->message) return NULL;
-
     if (uri_has_prefix(&msg->uri, "/api/books")) handle_controller_result(&books_controller, method, msg, hrd);
     else if (uri_has_prefix(&msg->uri, "/api/posts")) handle_controller_result(&posts_controller, method, msg, hrd);
     else {
@@ -82,7 +79,7 @@ HTTP_RESPONSE_DETAILS* get_api_endpoint_response(const char* method, struct mg_h
 
 void send_default_failure_response(struct mg_connection *conn)
 {
-    mg_http_reply(
+   mg_http_reply(
         conn,
         500,
         JSON_CONTENT_TYPE,
@@ -104,7 +101,7 @@ static void event_handler(struct mg_connection *conn, int event, void* event_dat
 	mg_http_reply(conn, 200,
 	"Access-Control-Allow-Origin: *\r\n"
 	"Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n"
-	"Access-Control-Allow-Headers: Content-Type\r\n",
+	"Access-Control-Allow-Headers: Content-Type, ngrok-skip-browser-warning\r\n",
 	"");
 	return;
     }
@@ -121,7 +118,6 @@ static void event_handler(struct mg_connection *conn, int event, void* event_dat
 	if (construction_result <= 0) {
 	    send_default_failure_response(conn);
 	    free(hrd->data);
-	    free(hrd->message);
 	    free(hrd);
 	    return;
 	}
@@ -141,7 +137,6 @@ static void event_handler(struct mg_connection *conn, int event, void* event_dat
     }
 
     free(hrd->data);
-    free(hrd->message);
     free(hrd);
 }
 
@@ -152,7 +147,7 @@ int main(void)
     mg_mgr_init(&event_manager);
 
     mg_http_listen(&event_manager, URL, event_handler, NULL); // start HTTP server on a port
-    printf("Server listening on PORT 8000...\n");
+    printf("Server listening on PORT 5000...\n");
 
     while (1) mg_mgr_poll(&event_manager, 1000); // event loop
 
