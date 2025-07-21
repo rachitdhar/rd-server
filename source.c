@@ -99,7 +99,7 @@ static void event_handler(struct mg_connection *conn, int event, void* event_dat
     // to handle CORS
     if (strcmp(method, "OPTIONS") == 0) {
 	mg_http_reply(conn, 200,
-	"Access-Control-Allow-Origin: *\r\n"
+	"Access-Control-Allow-Origin: https://rachitdhar.github.io\r\n"
 	"Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n"
 	"Access-Control-Allow-Headers: Content-Type, ngrok-skip-browser-warning\r\n",
 	"");

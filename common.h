@@ -6,7 +6,7 @@
 #define MAX_JSON_MSG_SIZE 500
 #define MAX_FILE_NAME_LENGTH 100
 
-#define CORS_HEADERS "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, ngrok-skip-browser-warning\r\n"
+#define CORS_HEADERS "Access-Control-Allow-Origin: https://rachitdhar.github.io\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type, ngrok-skip-browser-warning\r\n"
 #define JSON_CONTENT_TYPE "Content-Type: application/json\r\n"
 #define INTERNAL_SERVER_ERROR_JSON "{ \"status\": 500, \"data\": \"\", \"message\": \"Internal server error\" }"
 
