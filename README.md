@@ -16,6 +16,13 @@ For compile and run:
 make
 ```
 
+or, for linux
+
+```
+make build-linux
+make run
+```
+
 The definitions for these are given in the Makefile.
 
 ## Resources
