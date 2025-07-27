@@ -1,4 +1,4 @@
-#include "posts.h"
+#include "headers/posts.h"
 
 #define BASE "/api/posts"
 #define MAX_QUERY_SIZE 200

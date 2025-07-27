@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "common.h"
+#include "headers/common.h"
 
 STREAM_DATA* get_file_stream(char* filepath)
 {
