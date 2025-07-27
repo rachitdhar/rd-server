@@ -1,9 +1,9 @@
-#include "mongoose.h"
+#include "libs/mongoose.h"
 #include <stdio.h>
-#include "common.h"
+#include "headers/common.h"
 
-#include "api/books.h"
-#include "api/posts.h"
+#include "api/headers/books.h"
+#include "api/headers/posts.h"
 
 #define URL "http://0.0.0.0:5000"
 

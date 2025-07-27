@@ -15,8 +15,8 @@ linux:
 	rm -f $(NAME)
 
 compile-libs:
-	$(CC) -c -D_POSIX_C_SOURCE=200000L mongoose.c -o mongoose.o
-	$(CC) -c sqlite3.c -o sqlite3.o
+	$(CC) -c -D_POSIX_C_SOURCE=200000L libs/mongoose.c -o mongoose.o
+	$(CC) -c libs/sqlite3.c -o sqlite3.o
 
 build:
 	$(CC) $(CFLAGS) $(SRCS) -o $(NAME) $(LDFLAGS)
