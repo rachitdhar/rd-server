@@ -31,6 +31,7 @@ I wanted to go for as simple libraries as possible. So basically I have taken re
 
 - For HTTP server: Mongoose (https://github.com/cesanta/mongoose)
 - For Database: SQLite - C Source code as amalgamation (https://www.sqlite.org/download.html)
+- For SHA256: https://github.com/B-Con/crypto-algorithms (using sha256.c and sha256.h)
 
 ## References
 

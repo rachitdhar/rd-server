@@ -31,6 +31,7 @@ CONTROLLER_RESULT* books_controller(const char* method, struct mg_http_message* 
 {
     CONTROLLER_RESULT* res = malloc(sizeof(CONTROLLER_RESULT));
     if (strcmp(method, "GET") == 0 && mg_match(msg->uri, mg_str(BASE), NULL)) {
+	res->token = NULL;
 	res->data = get_books();
 	res->type = JSON;
 	return res;

@@ -63,6 +63,7 @@ CONTROLLER_RESULT* posts_controller(const char* method, struct mg_http_message* 
 	// handling for query params
 	char* id = malloc(MAX_FILE_NAME_LENGTH - sizeof("post_"));
 	if (mg_http_get_var(&msg->query, "id", id, sizeof(id)) > 0) {
+	    res->token = NULL;
 	    res->data = get_post_info(id);
 	    res->type = JSON;
 	    return res;
@@ -72,11 +73,13 @@ CONTROLLER_RESULT* posts_controller(const char* method, struct mg_http_message* 
 	// handling for query params
 	char* id = malloc(MAX_FILE_NAME_LENGTH - sizeof("post_"));
 	if (mg_http_get_var(&msg->query, "id", id, sizeof(id)) > 0) {
+	    res->token = NULL;
 	    res->data = get_post_stream(id);
 	    res->type = STREAM;
 	    return res;
 	}
 
+	res->token = NULL;
 	res->data = get_posts();
 	res->type = JSON;
 	return res;

@@ -1,9 +1,9 @@
 #include "libs/mongoose.h"
-#include <stdio.h>
 #include "headers/common.h"
 
 #include "api/headers/books.h"
 #include "api/headers/posts.h"
+#include "api/headers/auth.h"
 
 #define URL "http://0.0.0.0:5000"
 
@@ -40,11 +40,13 @@ HTTP_RESPONSE_DETAILS* hrd
     CONTROLLER_RESULT* result = (*controller)(method, msg);
     if (!result) {
 	hrd->status_code = 500;
+	hrd->token = NULL;
 	hrd->data = "";
 	hrd->message = "API endpoint failed";
 	hrd->type = JSON;
     } else {
 	hrd->status_code = 200;
+	hrd->token = result->token;
 	hrd->data = result->data;
 	hrd->message = "Message request successful";
 	hrd->type = result->type;
@@ -67,8 +69,10 @@ HTTP_RESPONSE_DETAILS* get_api_endpoint_response(const char* method, struct mg_h
 
     if (uri_has_prefix(&msg->uri, "/api/books")) handle_controller_result(&books_controller, method, msg, hrd);
     else if (uri_has_prefix(&msg->uri, "/api/posts")) handle_controller_result(&posts_controller, method, msg, hrd);
+    else if (uri_has_prefix(&msg->uri, "/api/auth")) handle_controller_result(&auth_controller, method, msg, hrd);
     else {
 	hrd->status_code = 404;
+	hrd->token = NULL;
 	hrd->data = "";
 	hrd->message = "Failed due to invalid uri";
 	hrd->type = JSON;
@@ -113,6 +117,15 @@ static void event_handler(struct mg_connection *conn, int event, void* event_dat
 	return;
     }
 
+    // create cookie header if token exists
+    char cookie_header[512];
+    if (hrd->token != NULL) {
+	snprintf(cookie_header, sizeof(cookie_header), "Set-Cookie: token=%s; HttpOnly; Secure; SameSite=Strict; Path=/\r\n", hrd->token);
+    }
+
+    // send message
+    char headers[1024];
+
     if (hrd->type == JSON) {
 	int construction_result = construct_json_response(hrd);
 	if (construction_result <= 0) {
@@ -121,17 +134,14 @@ static void event_handler(struct mg_connection *conn, int event, void* event_dat
 	    free(hrd);
 	    return;
 	}
-
-	mg_http_reply(conn, hrd->status_code, CORS_HEADERS JSON_CONTENT_TYPE, "%s", (char*)response);
-    } else if (hrd->type == STREAM) {
+	snprintf(headers, sizeof(headers), "%s%s%s", CORS_HEADERS, cookie_header, JSON_CONTENT_TYPE);
+	mg_http_reply(conn, hrd->status_code, headers, "%s", (char*)response);
+    }
+    else if (hrd->type == STREAM) {
 	STREAM_DATA* sd = (STREAM_DATA*)hrd->data;
+	snprintf(headers, sizeof(headers), "%s%s%s%s", "HTTP/1.1 %d OK\r\n", CORS_HEADERS, "Content-Type: text/plain\r\nContent-Length: %ld\r\n\r\n", cookie_header);
 
-	mg_printf(conn,
-        "HTTP/1.1 %d OK\r\n"
-	CORS_HEADERS
-	"Content-Type: text/plain\r\nContent-Length: %ld\r\n\r\n",
-        hrd->status_code, sd->filesize); // sending header
-
+	mg_printf(conn, headers, hrd->status_code, sd->filesize); // sending header
 	mg_send(conn, sd->buffer, sd->filesize); // sending file stream
 	conn->is_draining = 1; // to close the connection
     }
