@@ -1,2 +1,2 @@
 # to not include externally sourced libraries in github language metrics
-"libs/**" linguist-vendored
+libs/** linguist-vendored
