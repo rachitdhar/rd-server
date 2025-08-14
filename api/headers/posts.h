@@ -1,9 +1,9 @@
 #ifndef POSTS_H
 #define POSTS_H
 
-#include "../sql_handler.h"
-#include "../mongoose.h"
-#include "../common.h"
+#include "../../headers/sql_handler.h"
+#include "../../libs/mongoose.h"
+#include "../../headers/common.h"
 
 char* get_posts();
 STREAM_DATA* get_post_stream(const char* post_id);

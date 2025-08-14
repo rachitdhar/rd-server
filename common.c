@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "headers/common.h"
+#include "libs/sha256.h"
+
 
 STREAM_DATA* get_file_stream(char* filepath)
 {
@@ -33,15 +35,15 @@ STREAM_DATA* get_file_stream(char* filepath)
 
 void get_sha256(const char *input, char output[65])
 {
-    uint8_t hash[SHA256_BLOCK_SIZE];
+    BYTE hash[SHA256_HASH_SIZE];
     SHA256_CTX ctx;
 
     sha256_init(&ctx);
-    sha256_update(&ctx, (const uint8_t *)input, strlen(input));
+    sha256_update(&ctx, (const BYTE *)input, strlen(input));
     sha256_final(&ctx, hash);
 
     // convert hash to hex string
-    for (int i = 0; i < SHA256_BLOCK_SIZE; i++) {
+    for (int i = 0; i < SHA256_HASH_SIZE; i++) {
         sprintf(output + (i * 2), "%02x", hash[i]);
     }
     output[64] = '\0';

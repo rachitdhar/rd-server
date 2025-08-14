@@ -2,7 +2,6 @@
 
 #define BASE "/api/auth"
 #define MAX_QUERY_SIZE 200
-#define SHA256_HASH_SIZE 65
 
 // validate the user and password, and return the auth token
 char* authenticate(char* user_id, char* passw)
@@ -19,7 +18,8 @@ char* authenticate(char* user_id, char* passw)
     "select"
     " u.hash"
     " from users u"
-    " where u.user_id = %s",
+    " where u.user_id = %s"
+    " and u.is_admin = 1",
     user_id);
 
     sqlite3* db;
@@ -51,7 +51,7 @@ char* authenticate(char* user_id, char* passw)
 
     // generate a token and return it
     //return generate_jwt();
-    return ""; // TODO: Handle JWT token generation
+    return "abcd1234"; // TODO: Handle JWT token generation
 }
 
 CONTROLLER_RESULT* auth_controller(const char* method, struct mg_http_message* msg)

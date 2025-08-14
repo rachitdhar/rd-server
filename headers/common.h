@@ -3,12 +3,12 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "../libs/sha256.h"
 
 #define MAX_JSON_RESPONSE_SIZE 100000
 #define MAX_JSON_DATA_SIZE 99500
 #define MAX_JSON_MSG_SIZE 500
 #define MAX_FILE_NAME_LENGTH 100
+#define SHA256_HASH_SIZE 65
 
 #define CORS_HEADERS \
 "Access-Control-Allow-Origin: https://rachitdhar.github.io\r\n" \
